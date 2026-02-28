@@ -336,6 +336,96 @@
     body.dark-mode .main-content-top div[style*="background: var(--bg-color)"] button:hover {
       box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4) !important; /* Hover efektini yeşil yap */
     }
+
+    /* --- MOBİL UYUM (RESPONSIVE TASARIM) --- */
+    @media (max-width: 768px) {
+      body {
+        overflow-y: auto; /* Telefondan aşağı kaydırmaya izin ver */
+      }
+      .planner-container {
+        display: flex;
+        flex-direction: column; /* Yan yana değil alt alta diz */
+        height: auto;
+        min-height: 100vh;
+      }
+
+      /* Sol Menü (Sidebar) Ayarları */
+      .sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+        padding: 20px;
+        height: auto;
+      }
+
+      /* Sekmeler telefonda yan yana kutucuklar olsun */
+      .nav-tabs {
+        flex-direction: row;
+        overflow-x: auto;
+        padding-bottom: 5px;
+        gap: 5px;
+      }
+      .nav-btn {
+        flex: 1;
+        justify-content: center;
+        font-size: 12px;
+        padding: 10px;
+        white-space: nowrap;
+      }
+
+      /* Sağ Paneller (Görünümler) */
+      .view-section {
+        height: auto;
+        min-height: 60vh;
+        overflow: visible;
+      }
+
+      /* Planlayıcı Ekranı: Tüm Grid'leri 1 Sütuna Düşür */
+      .main-content-top {
+        grid-template-columns: 1fr; /* Sütunları alt alta al */
+        padding: 20px;
+        gap: 20px;
+      }
+      .main-content-bottom {
+        grid-template-columns: 1fr;
+        padding: 20px;
+        height: auto;
+      }
+
+      /* Haftalık Görünüm: 7 Günü alt alta diz */
+      .weekly-grid {
+        grid-template-columns: 1fr;
+      }
+      .day-column {
+        height: auto;
+        min-height: 200px;
+      }
+
+      /* Günlük Ekranı: Geçmiş ve Editörü alt alta al */
+      .diary-layout {
+        grid-template-columns: 1fr;
+        height: auto;
+      }
+      .diary-history {
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+        height: 200px; /* Kaydırılabilir küçük bir alan */
+      }
+      .diary-editor {
+        padding: 20px;
+        height: 70vh;
+      }
+      .diary-date-display {
+        font-size: 18px; /* Tarih yazısını küçült */
+      }
+
+      /* Kilit Ekranı */
+      .lock-card {
+        width: 90%;
+        padding: 30px 20px;
+      }
+    }
+    
   </style>
 </head>
 <body>

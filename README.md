@@ -1,4 +1,4 @@
-# 🗓️ Ajandam - Premium Digital Planner & Diary
+# 🗓️ Ajandam - Digital Planner & Diary
 
 Tam donanımlı, modern ve kişiselleştirilmiş bir Verimlilik (Productivity) uygulaması. Günlük görevlerinizi organize edebilir, haftalık hedeflerinizi kuşbakışı takip edebilir ve sadece size özel, arka plan şifrelemesiyle korunan dijital günlüğünüzü tutabilirsiniz.
 

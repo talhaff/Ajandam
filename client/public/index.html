@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Premium Digital Planner & Diary</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Merriweather:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --bg-color: #f1f5f9;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+      --success: #10b981;
+      --high: #ef4444;
+      --med: #f59e0b;
+      --low: #3b82f6;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+      overflow: hidden; 
+    }
+
+    .planner-container {
+      background: var(--card-bg);
+      width: 100vw;
+      height: 100vh;
+      display: grid;
+      grid-template-columns: 320px 1fr; 
+      overflow: hidden;
+    }
+
+    /* SOL PANEL: Sabit Kontroller */
+    .sidebar {
+      background: #f8fafc;
+      border-right: 1px solid var(--border-color);
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    .header h1 {
+      font-size: 24px;
+      color: var(--primary);
+      margin-bottom: 25px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Sekme (Navigasyon) Butonları */
+    .nav-tabs { display: flex; flex-direction: column; gap: 8px; margin-bottom: 25px; }
+    .nav-btn {
+      padding: 12px 15px; border-radius: 10px; border: none; background: transparent;
+      color: var(--text-muted); font-weight: 600; font-size: 14px; text-align: left;
+      cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 10px;
+    }
+    .nav-btn:hover { background: #e2e8f0; color: var(--text-main); }
+    .nav-btn.active { background: var(--primary); color: white; }
+
+    .input-group { margin-bottom: 15px; }
+    .input-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase; }
+    
+    input, select, textarea {
+      width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border-color);
+      background: white; font-family: inherit; font-size: 13px;
+    }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); }
+
+    .flex-row { display: flex; gap: 10px; }
+    .flex-row > div { flex: 1; }
+
+    .action-btn {
+      width: 100%; padding: 12px; border-radius: 10px; border: none;
+      background: var(--primary); color: white; font-weight: 600;
+      cursor: pointer; transition: 0.2s; margin-top: 10px;
+    }
+    .action-btn:hover { background: var(--primary-hover); }
+
+    .analytics { margin-top: auto; padding-top: 20px; border-top: 1px solid var(--border-color); }
+    .progress-header { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; margin-bottom: 8px;}
+    .progress-bar-bg { height: 8px; background: #e2e8f0; border-radius: 10px; overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--success); width: 0%; transition: 0.5s; }
+
+    /* SAĞ PANEL: Görünümler (Views) */
+    .view-section { display: none; height: 100vh; flex-direction: column; background: white; overflow: hidden; }
+    .view-section.active { display: flex; }
+
+    /* --- PLANLAYICI GÖRÜNÜMÜ --- */
+    .main-content-top { padding: 30px 40px; flex: 1; display: grid; grid-template-columns: 2fr 1fr; gap: 30px; overflow: hidden; }
+    .main-content-bottom {
+      height: 35vh; border-top: 3px solid var(--bg-color); padding: 20px 40px; background: #fafafa;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 30px; overflow: hidden;
+    }
+    .panel-scroll { overflow-y: auto; padding-right: 15px; }
+    .section-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--bg-color); padding-bottom: 10px; margin-bottom: 15px; }
+    .section-header h3 { font-size: 18px; font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
+
+    /* Görev Kartları (Ortak) */
+    .task {
+      display: flex; align-items: center; gap: 12px; padding: 12px; background: white; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 10px; position: relative; overflow: hidden; transition: box-shadow 0.2s;
+    }
+    .task:hover { box-shadow: 0 4px 10px rgba(0,0,0,0.03); background-color: #fbfbfb; }
+    .priority-line { position: absolute; left: 0; top: 0; bottom: 0; width: 3px; }
+    .priority-Yüksek { background: var(--high); }
+    .priority-Orta { background: var(--med); }
+    .priority-Düşük { background: var(--low); }
+    .task-content { flex-grow: 1; display: flex; align-items: center; gap: 10px; }
+    .task-details { display: flex; flex-direction: column; }
+    .task-title { font-weight: 500; font-size: 13px; color: var(--text-main); }
+    .task-desc { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    .category-badge { font-size: 9px; font-weight: 600; padding: 2px 6px; border-radius: 4px; background: var(--bg-color); color: var(--text-muted); text-transform: uppercase; }
+    .date-badge { font-size: 10px; font-weight: 600; padding: 3px 7px; border-radius: 4px; background: var(--text-muted); color: white; margin-left: auto; }
+    .completed .task-title { text-decoration: line-through; color: var(--text-muted); }
+    .delete-btn { color: #cbd5e1; background: none; border: none; cursor: pointer; padding: 3px; transition: color 0.2s; font-size: 13px; margin-left: 10px;}
+    .task:hover .delete-btn { color: var(--high); }
+    input[type="checkbox"] { appearance: none; width: 16px; height: 16px; border: 2px solid #cbd5e1; border-radius: 4px; cursor: pointer; position: relative; flex-shrink: 0; }
+    input[type="checkbox"]:checked { background: var(--success); border-color: var(--success); }
+    input[type="checkbox"]:checked::after { content: '✔'; color: white; position: absolute; top: -2px; left: 2px; font-size: 11px; }
+
+    /* --- HAFTALIK GÖRÜNÜM (YENİ) --- */
+    #weeklyView {
+      background: #fafafa;
+      padding: 30px 40px;
+      overflow-y: auto;
+    }
+    
+    .weekly-header {
+      text-align: center;
+      margin-bottom: 25px;
+      color: var(--primary);
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    .weekly-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr); /* 4 Sütunlu Grid */
+      gap: 20px;
+    }
+
+    .day-column {
+      background: white;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      height: 38vh; /* Ekrana sığması için yükseklik */
+      overflow: hidden;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
+    }
+
+    .day-header {
+      background: #fdfdfd;
+      padding: 12px;
+      text-align: center;
+      border-bottom: 1px solid var(--border-color);
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--text-main);
+    }
+
+    .day-header span {
+      display: block;
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 400;
+      margin-top: 2px;
+    }
+
+    .day-body {
+      padding: 10px;
+      flex: 1;
+      overflow-y: auto;
+      background: #f8fafc;
+    }
+
+    /* Haftalık görünümdeki görevler daha kompakt olsun */
+    .day-body .task { padding: 8px; margin-bottom: 8px; border-radius: 6px;}
+    .day-body .task-title { font-size: 12px; }
+    .day-body .task-desc { display: none; } /* Haftalıkta detayı gizle yer kaplamasın */
+    .day-body .category-badge { display: none; }
+    .day-body .date-badge { display: none; }
+
+    /* --- GÜNLÜK (DIARY) GÖRÜNÜMÜ --- */
+    #diaryView { padding: 0; background: #fdfdfd; position: relative; } /* Grid ve Kilit için gerekli */
+    .diary-layout { display: grid; grid-template-columns: 280px 1fr; height: 100vh; width: 100%; }
+    
+    .diary-history { background: #f8fafc; border-right: 1px solid var(--border-color); padding: 25px 20px; overflow-y: auto; }
+    .diary-history h3 { font-size: 15px; color: var(--primary); margin-bottom: 20px; display: flex; align-items: center; gap: 8px;}
+    
+    .diary-history-item { padding: 15px; background: white; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 12px; cursor: pointer; transition: 0.2s; }
+    .diary-history-item:hover { border-color: var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.03); transform: translateY(-1px); }
+    .diary-history-date { font-weight: 600; font-size: 13px; color: var(--text-main); }
+    .diary-history-preview { font-size: 11px; color: var(--text-muted); margin-top: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.4;}
+    
+    .diary-editor { padding: 40px 60px; background-image: linear-gradient(#e2e8f0 1px, transparent 1px); background-size: 100% 40px; display: flex; flex-direction: column; overflow-y: auto; }
+    .diary-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; background: white; padding: 10px 15px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.02);}
+    .diary-date-display { font-size: 24px; font-weight: 700; color: var(--primary); }
+    .diary-textarea { width: 100%; flex: 1; border: none; background: transparent; resize: none; font-family: 'Merriweather', serif; font-size: 15px; color: #334155; line-height: 40px; outline: none; margin-top: -10px; }
+    
+    /* --- GÜNLÜK KİLİT EKRANI --- */
+    .diary-lock-screen {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(248, 250, 252, 0.85); backdrop-filter: blur(8px);
+      display: flex; justify-content: center; align-items: center; z-index: 50;
+    }
+    .lock-card {
+      background: white; padding: 40px; border-radius: 20px; text-align: center;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.08); width: 340px; border: 1px solid var(--border-color);
+    }
+    .lock-icon { font-size: 45px; color: var(--primary); margin-bottom: 20px; }
+    .lock-card h2 { margin-bottom: 8px; color: var(--text-main); font-size: 20px; }
+    .lock-card p { font-size: 13px; color: var(--text-muted); margin-bottom: 25px; }
+    .diary-hidden { display: none !important; }
+
+
+    /* --- GERÇEKÇİ VE ŞIK KARANLIK MOD (DARK MODE) V2 --- */
+    body.dark-mode {
+      --bg-color: #0f172a;       /* En arka plan (Koyu Lacivert) */
+      --card-bg: #1e293b;        /* Kartlar (Bir ton açığı) */
+      --text-main: #f8fafc;      /* Ana metinler (Bembeyaz) */
+      --text-muted: #94a3b8;     /* Alt metinler (Okunabilir Gri) */
+      --border-color: #334155;   /* Çizgiler ve sınırlar */
+    }
+
+    /* Tüm ana panellerin arka planını ez */
+    body.dark-mode .planner-container,
+    body.dark-mode .view-section,
+    body.dark-mode .main-content,
+    body.dark-mode #diaryView {
+      background-color: var(--bg-color);
+    }
+
+    /* Sol menü, haftalık görünüm ve alt özet kısmı */
+    body.dark-mode .sidebar,
+    body.dark-mode .main-content-bottom,
+    body.dark-mode #weeklyView,
+    body.dark-mode .diary-history {
+      background-color: var(--card-bg);
+      border-color: var(--border-color);
+    }
+
+    /* Kartlar, inputlar ve kutucuklar */
+    body.dark-mode .task,
+    body.dark-mode input,
+    body.dark-mode select,
+    body.dark-mode textarea,
+    body.dark-mode .day-column,
+    body.dark-mode .diary-history-item,
+    body.dark-mode .lock-card,
+    body.dark-mode .diary-header {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+    }
+
+    /* Günlük Odak ve diğer özel kutular */
+    body.dark-mode .main-content-top > div > div[style*="background: var(--bg-color)"] {
+      background: var(--card-bg) !important;
+      border: 1px solid var(--border-color);
+    }
+
+    /* Yazı tiplerini düzelt */
+    body.dark-mode .section-header h3,
+    body.dark-mode .task-title,
+    body.dark-mode .diary-history-date,
+    body.dark-mode .day-header {
+      color: var(--text-main);
+    }
+
+    body.dark-mode .day-header {
+      background-color: var(--bg-color);
+      border-color: var(--border-color);
+    }
+
+    body.dark-mode .day-body {
+      background-color: var(--card-bg);
+    }
+
+    /* Kategori rozetleri (Badges) */
+    body.dark-mode .category-badge {
+      background-color: var(--border-color);
+      color: #cbd5e1;
+    }
+
+    /* Günlük Defter Çizgileri ve Cam Efekti */
+    body.dark-mode .diary-editor {
+      background-image: linear-gradient(var(--border-color) 1px, transparent 1px);
+    }
+    body.dark-mode .diary-lock-screen {
+      background: rgba(15, 23, 42, 0.85);
+    }
+    /* YENİ YAMA: Haftalık Odak Hedefleri Kutusu ve Butonu İçin Özel Düzeltme */
+    body.dark-mode .main-content-top > div > div[style*="background: var(--bg-color)"] {
+      background: var(--card-bg) !important; /* Arka planı koyulaştır */
+      border: 1px solid var(--border-color) !important; /* Belirgin bir sınır ekle */
+      padding: 15px !important; /* Kutunun iç boşluğunu düzelt */
+      color: var(--text-main) !important; /* Metni beyaza çevir */
+    }
+
+    /* Kutu içindeki başlığı beyaza çevir */
+    body.dark-mode .main-content-top div[style*="background: var(--bg-color)"] h3,
+    body.dark-mode .main-content-top div[style*="background: var(--bg-color)"] i {
+      color: var(--text-main) !important;
+    }
+
+    /* Kutu içindeki metin alanının arka planını koyulaştır */
+    body.dark-mode .main-content-top div[style*="background: var(--bg-color)"] textarea {
+      background-color: var(--bg-color) !important;
+      color: var(--text-main) !important;
+      border: 1px solid var(--border-color) !important;
+    }
+
+    /* Kutu içindeki Kaydet butonunu belirginleştir */
+    body.dark-mode .main-content-top div[style*="background: var(--bg-color)"] button {
+      background: linear-gradient(135deg, #10b981, #059669) !important; /* Başarı rengi (Gradient yeşil) */
+      color: white !important; /* Metni beyaza çevir */
+      border: 1px solid #10b981 !important; /* Yeşil bir kenarlık ekle */
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25) !important; /* Hafif bir yeşil ışıltı ekle */
+    }
+
+    body.dark-mode .main-content-top div[style*="background: var(--bg-color)"] button:hover {
+      box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4) !important; /* Hover efektini yeşil yap */
+    }
+  </style>
+</head>
+<body>
+
+  <div class="planner-container">
+    
+    <div class="sidebar">
+      <div class="header">
+        <div class="header" style="display: flex; justify-content: space-between; align-items: center;">
+        <h1 style="margin: 0;"><i class="fa-solid fa-layer-group"></i> Ajandam </h1>
+        <button id="themeToggleBtn" onclick="toggleTheme()" style="width: auto; padding: 8px 12px; margin: 0; background: transparent; color: var(--text-muted); font-size: 18px; border-radius: 50%;">
+          <i class="fa-solid fa-moon"></i>
+        </button>
+      </div>
+      </div>
+
+      <div class="nav-tabs">
+        <button class="nav-btn active" onclick="switchTab('planner')"><i class="fa-solid fa-calendar-day"></i> Günlük Plan</button>
+        <button class="nav-btn" onclick="switchTab('weekly')"><i class="fa-solid fa-calendar-week"></i> Haftalık Plan</button>
+        <button class="nav-btn" onclick="switchTab('diary')"><i class="fa-solid fa-book-open"></i> Günlük</button>
+      </div>
+
+      <div class="input-group">
+        <label>Tarih Seçin</label>
+        <input type="date" id="date" />
+      </div>
+
+      <div id="plannerControls">
+        <div class="input-group" style="margin-top: 20px;">
+          <label>Yeni Görev Ekle</label>
+          <input type="text" id="title"  autocomplete="off" />
+        </div>
+        
+        <div class="input-group">
+          <textarea id="description" placeholder="Görev detayları" rows="2"></textarea>
+        </div>
+
+        <div class="flex-row input-group">
+          <div>
+            <label>Kategori</label>
+            <select id="category">
+              
+              <option value="Yazılım/Proje">💻 Yazılım/Proje</option>
+              <option value="Spor/Sağlık">💪 Spor/Sağlık</option>
+              <option value="Kişisel">☕ Kişisel</option>
+            </select>
+          </div>
+          <div>
+            <label>Öncelik</label>
+            <select id="priority">
+              <option value="Yüksek">🔥 Yüksek</option>
+              <option value="Orta" selected>⚡ Orta</option>
+              <option value="Düşük">🌱 Düşük</option>
+            </select>
+          </div>
+        </div>
+
+        <button class="action-btn" onclick="addTask()"><i class="fa-solid fa-plus"></i> Görev Ekle</button>
+
+        <div class="analytics">
+          <div class="progress-header">
+            <span>Günlük Verimlilik</span>
+            <span id="progress-text">0%</span>
+          </div>
+          <div class="progress-bar-bg">
+            <div class="progress-fill" id="progress-fill"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="plannerView" class="view-section active">
+      <div class="main-content-top">
+        <div class="panel-scroll">
+          <div class="section-header">
+            <h3><i class="fa-solid fa-calendar-day"></i> Günün Planı</h3>
+          </div>
+          <div id="tasks"></div>
+        </div>
+
+        <div class="panel-scroll">
+          <div style="background: var(--bg-color); padding: 20px; border-radius: 12px;">
+            <div class="section-header" style="border:none; margin-bottom: 5px; padding:0;">
+              <h3 style="font-size: 15px;"><i class="fa-solid fa-bullseye"></i> Haftalık Odak Hedefleri</h3>
+              <button class="action-btn" onclick="saveWeekly()" style="width: auto; padding: 6px 10px; margin: 0; font-size: 11px; background: var(--text-main);">Kaydet</button>
+            </div>
+            <textarea id="weeklyGoals" placeholder="Bu hafta bitmesi gereken en önemli şeyler?" rows="3" style="border: none; margin: 0; background: white; font-size: 13px;"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="main-content-bottom">
+        <div class="panel-scroll">
+          <div class="section-header"><h3 style="color: var(--high);"><i class="fa-solid fa-clock-rotate-left"></i> Bekleyen Görevler</h3></div>
+          <div id="allPendingTasks"></div>
+        </div>
+        <div class="panel-scroll">
+          <div class="section-header"><h3 style="color: var(--success);"><i class="fa-solid fa-check-double"></i> Tamamlanan Görevler Özet</h3></div>
+          <div id="allCompletedTasks"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="weeklyView" class="view-section">
+      <div class="weekly-header" id="weeklyHeaderDisplay">
+        Haftalık Görünüm
+      </div>
+      <div class="weekly-grid" id="weeklyGrid">
+        </div>
+    </div>
+
+    <div id="diaryView" class="view-section">
+      
+      <div id="diaryLockScreen" class="diary-lock-screen">
+        <div class="lock-card">
+          <i class="fa-solid fa-lock lock-icon"></i>
+          <h2>Özel Alan</h2>
+          <p>Günlüğe erişmek için giriş yapmalısın.</p>
+          <div class="input-group">
+            <input type="text" id="diaryUser" placeholder="Kullanıcı Adı" autocomplete="off" />
+          </div>
+          <div class="input-group">
+            <input type="password" id="diaryPass" placeholder="Şifre" />
+          </div>
+          <button class="action-btn" onclick="unlockDiary()">Kilidi Aç</button>
+          <p id="lockError" style="color: var(--high); font-size: 12px; margin-top: 15px; display: none;">Hatalı giriş yaptın!</p>
+        </div>
+      </div>
+
+      <div id="diarySecretContent" class="diary-layout diary-hidden">
+        
+        <div class="diary-history">
+          <h3><i class="fa-solid fa-clock-rotate-left"></i> Geçmiş Günlükler</h3>
+          <div id="diaryHistoryList">
+            </div>
+        </div>
+
+        <div class="diary-editor">
+          <div class="diary-header">
+            <div class="diary-date-display" id="diaryDateDisplay">Tarih Bekleniyor...</div>
+            <button type="button" class="action-btn" onclick="saveDiary()" style="width: auto; padding: 10px 20px; margin: 0;">
+              <i class="fa-solid fa-floppy-disk"></i> Sayfayı Kaydet
+            </button>
+          </div>
+          <textarea id="diaryContent" class="diary-textarea" ></textarea>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const API = 'http://localhost:5000/api/tasks';
+    let allTasksGlobally = []; 
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('date').value = new Date().toISOString().split('T')[0];
+      loadAllData();
+      updateHeaders();
+    });
+
+    document.getElementById('date').addEventListener('change', () => {
+      loadAllData();
+      updateHeaders();
+    });
+
+    function switchTab(tabName) {
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.view-section').forEach(view => view.classList.remove('active'));
+
+      if(tabName === 'planner') {
+        document.querySelector('.nav-btn:nth-child(1)').classList.add('active');
+        document.getElementById('plannerView').classList.add('active');
+        document.getElementById('plannerControls').style.display = 'block';
+      } else if (tabName === 'weekly') {
+        document.querySelector('.nav-btn:nth-child(2)').classList.add('active');
+        document.getElementById('weeklyView').classList.add('active');
+        document.getElementById('plannerControls').style.display = 'block';
+        renderWeeklyView(); 
+      } else {
+        document.querySelector('.nav-btn:nth-child(3)').classList.add('active');
+        document.getElementById('diaryView').classList.add('active');
+        document.getElementById('plannerControls').style.display = 'none';
+      }
+    }
+
+    function updateHeaders() {
+      const dateVal = document.getElementById('date').value;
+      if(!dateVal) return;
+      
+      const dateObj = new Date(dateVal);
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      document.getElementById('diaryDateDisplay').innerText = dateObj.toLocaleDateString('tr-TR', options);
+    }
+
+    function getWeekNumber(d) {
+      d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+      d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
+      const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+      return d.getUTCFullYear() + '-W' + Math.ceil((((d - yearStart) / 86400000) + 1)/7);
+    }
+
+    async function loadAllData() {
+      await fetchAllTasksGlobally();
+      
+      const date = document.getElementById('date').value;
+      const filtered = allTasksGlobally.filter(t => t.date === date);
+      renderDailyTasks(filtered);
+      
+      renderAllOverview(); 
+      renderWeeklyView();  
+      
+      fetchDiary();     
+      fetchWeekly();    
+      fetchAllDiaryNotes();
+    }
+
+    async function fetchAllTasksGlobally() {
+      try {
+        const res = await fetch(API);
+        allTasksGlobally = await res.json();
+      } catch (e) { console.error("Veri çekilemedi", e); }
+    }
+
+    function renderWeeklyView() {
+      const dateVal = document.getElementById('date').value;
+      if(!dateVal) return;
+
+      const grid = document.getElementById('weeklyGrid');
+      grid.innerHTML = '';
+
+      let curr = new Date(dateVal);
+      let day = curr.getDay(); 
+      let diff = curr.getDate() - day + (day === 0 ? -6 : 1); 
+      let monday = new Date(curr.setDate(diff));
+
+      const daysTR = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar'];
+
+      let sunday = new Date(monday);
+      sunday.setDate(sunday.getDate() + 6);
+      document.getElementById('weeklyHeaderDisplay').innerText = 
+        `${monday.toLocaleDateString('tr-TR')} - ${sunday.toLocaleDateString('tr-TR')} Haftası`;
+
+      for(let i = 0; i < 7; i++) {
+        let currentDayDate = new Date(monday);
+        currentDayDate.setDate(monday.getDate() + i);
+        let dateString = currentDayDate.toISOString().split('T')[0]; 
+        let displayDate = currentDayDate.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
+
+        let dayTasks = allTasksGlobally.filter(t => t.date === dateString);
+        dayTasks.sort((a, b) => a.completed - b.completed); 
+
+        let column = document.createElement('div');
+        column.className = 'day-column';
+        
+        let header = document.createElement('div');
+        header.className = 'day-header';
+        if(dateString === dateVal) header.style.color = 'var(--primary)';
+        header.innerHTML = `${daysTR[i]} <span>${displayDate}</span>`;
+
+        let body = document.createElement('div');
+        body.className = 'day-body';
+
+        if(dayTasks.length === 0) {
+          body.innerHTML = '<div style="color:#cbd5e1; font-size:11px; text-align:center; margin-top:10px;">Plan yok</div>';
+        } else {
+          dayTasks.forEach(task => {
+            body.appendChild(createTaskElement(task, false)); 
+          });
+        }
+
+        column.appendChild(header);
+        column.appendChild(body);
+        grid.appendChild(column);
+      }
+    }
+
+    function renderDailyTasks(tasks) {
+      const container = document.getElementById('tasks');
+      container.innerHTML = '';
+
+      if (tasks.length === 0) {
+        container.innerHTML = '<p style="color: var(--text-muted); font-size: 13px; text-align:center; padding: 20px;">Bugün için planlanmış bir görev yok.</p>';
+        updateAnalytics(0, 0);
+        return;
+      }
+
+      tasks.sort((a, b) => a.completed - b.completed);
+      let completedCount = 0;
+      tasks.forEach(task => {
+        if(task.completed) completedCount++;
+        container.appendChild(createTaskElement(task));
+      });
+
+      updateAnalytics(tasks.length, completedCount);
+    }
+
+    function createTaskElement(task, showDate = false) {
+      const isCompleted = task.completed === 1;
+      const div = document.createElement('div');
+      div.className = `task ${isCompleted ? 'completed' : ''}`;
+      
+      let dateHTML = '';
+      if(showDate) {
+        const parts = task.date.split('-');
+        dateHTML = `<span class="date-badge">${parts[2]}/${parts[1]}</span>`;
+      }
+
+      div.innerHTML = `
+        <div class="priority-line priority-${task.priority}"></div>
+        <input type="checkbox" ${isCompleted ? 'checked' : ''} onchange="toggleTask('${task.id}', ${isCompleted})" />
+        <div class="task-content">
+          <div class="task-details">
+            <div class="task-title">${task.title}</div>
+            ${task.description ? `<div class="task-desc">${task.description}</div>` : ''}
+          </div>
+          <span class="category-badge">${task.category}</span>
+          ${dateHTML}
+        </div>
+        <button class="delete-btn" onclick="deleteTask('${task.id}')"><i class="fa-solid fa-trash"></i></button>
+      `;
+      return div;
+    }
+
+    function renderAllOverview() {
+      const pendingContainer = document.getElementById('allPendingTasks');
+      const completedContainer = document.getElementById('allCompletedTasks');
+      
+      pendingContainer.innerHTML = ''; completedContainer.innerHTML = '';
+      const today = new Date().toISOString().split('T')[0];
+
+      const pending = allTasksGlobally.filter(t => t.completed === 0).sort((a,b) => a.date.localeCompare(b.date));
+      const completed = allTasksGlobally.filter(t => t.completed === 1).sort((a,b) => b.date.localeCompare(a.date));
+
+      if(pending.length === 0) pendingContainer.innerHTML = '<p style="color:var(--text-muted); font-size:12px; padding:10px;">Bekleyen görev yok 🎉</p>';
+      pending.forEach(task => {
+        const taskElem = createTaskElement(task, true);
+        if(task.date < today) taskElem.querySelector('.date-badge').style.background = 'var(--high)';
+        pendingContainer.appendChild(taskElem);
+      });
+
+      if(completed.length === 0) completedContainer.innerHTML = '<p style="color:var(--text-muted); font-size:12px; padding:10px;">Henüz tamamlanmış görev yok.</p>';
+      completed.forEach(task => completedContainer.appendChild(createTaskElement(task, true)));
+    }
+
+    function updateAnalytics(total, completed) {
+      const percentage = total === 0 ? 0 : Math.round((completed / total) * 100);
+      document.getElementById('progress-text').innerText = `${percentage}%`;
+      document.getElementById('progress-fill').style.width = `${percentage}%`;
+      document.getElementById('progress-fill').style.background = percentage === 100 ? 'var(--success)' : 'var(--primary)';
+    }
+
+    async function addTask() {
+      const title = document.getElementById('title').value.trim();
+      if (!title) return alert("Görev başlığı girmelisin!");
+
+      const data = {
+        title, description: document.getElementById('description').value,
+        date: document.getElementById('date').value, category: document.getElementById('category').value,
+        priority: document.getElementById('priority').value
+      };
+
+      await fetch(API, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data) });
+      document.getElementById('title').value = ''; document.getElementById('description').value = '';
+      loadAllData(); 
+    }
+
+    async function toggleTask(id, currentlyCompleted) {
+      await fetch(`${API}/${id}`, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({completed: currentlyCompleted ? 0 : 1}) });
+      loadAllData();
+    }
+
+    async function deleteTask(id) {
+      if(confirm('Görevi silmek istediğine emin misin?')) {
+        await fetch(`${API}/${id}`, { method: 'DELETE' });
+        loadAllData();
+      }
+    }
+
+    async function fetchDiary() {
+      const date = document.getElementById('date').value;
+      const res = await fetch(`${API}/note/${date}`);
+      const data = await res.json();
+      document.getElementById('diaryContent').value = data.content || '';
+    }
+
+    async function saveDiary() {
+      const date = document.getElementById('date').value;
+      const content = document.getElementById('diaryContent').value;
+      await fetch(`${API}/note`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({date, content}) });
+      fetchAllDiaryNotes();
+      
+      const btn = document.querySelector('.diary-header .action-btn');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<i class="fa-solid fa-check"></i> Kaydedildi!';
+      btn.style.background = 'var(--success)';
+      setTimeout(() => { btn.innerHTML = originalText; btn.style.background = 'var(--primary)'; }, 2000);
+    }
+
+    async function fetchWeekly() {
+      const date = new Date(document.getElementById('date').value);
+      const week = getWeekNumber(date);
+      const res = await fetch(`${API}/weekly/${week}`);
+      const data = await res.json();
+      document.getElementById('weeklyGoals').value = data.summary || '';
+    }
+
+    async function saveWeekly() {
+      const date = new Date(document.getElementById('date').value);
+      const week = getWeekNumber(date);
+      const summary = document.getElementById('weeklyGoals').value;
+      await fetch(`${API}/weekly`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({week, summary}) });
+      alert('Haftalık hedefler kaydedildi!');
+    }
+    
+    async function fetchAllDiaryNotes() {
+      try {
+        const res = await fetch(`${API}/notes/all`);
+        const notes = await res.json();
+        renderDiaryHistory(notes);
+      } catch (e) { console.error("Günlük geçmişi çekilemedi:", e); }
+    }
+
+    function renderDiaryHistory(notes) {
+      const container = document.getElementById('diaryHistoryList');
+      container.innerHTML = '';
+      
+      const validNotes = notes.filter(n => n.content && n.content.trim() !== '');
+
+      if(validNotes.length === 0) {
+         container.innerHTML = '<p style="font-size: 12px; color: var(--text-muted); text-align: center; margin-top:20px;">Henüz kaydedilmiş<br>günlük yok.</p>';
+         return;
+      }
+
+      validNotes.forEach(note => {
+        const div = document.createElement('div');
+        div.className = 'diary-history-item';
+        
+        div.onclick = () => {
+          document.getElementById('date').value = note.date;
+          loadAllData();
+          updateHeaders();
+        };
+
+        const dateObj = new Date(note.date);
+        const dateStr = dateObj.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+        
+        div.innerHTML = `
+          <div class="diary-history-date">${dateStr}</div>
+          <div class="diary-history-preview">${note.content}</div>
+        `;
+        container.appendChild(div);
+      });
+    }
+    
+    // --- GÜVENLİ GÜNLÜK KİLİT SİSTEMİ ---
+    let isDiaryUnlocked = false;
+
+    async function unlockDiary() {
+      const user = document.getElementById('diaryUser').value.trim().toLowerCase();
+      const pass = document.getElementById('diaryPass').value.trim();
+
+      try {
+        // Şifreyi arka plana (Node.js'e) soruyoruz
+        const res = await fetch(`${API}/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: user, password: pass })
+        });
+        
+        const data = await res.json();
+
+        if(data.success) {
+          // Arka plan onay verdi, kilidi aç!
+          document.getElementById('diaryLockScreen').style.display = 'none';
+          document.getElementById('diarySecretContent').classList.remove('diary-hidden');
+          isDiaryUnlocked = true;
+          document.getElementById('diaryPass').value = ''; // Güvenlik için şifre kutusunu temizle
+        } else {
+          // Arka plan reddetti
+          showLockError();
+        }
+      } catch (e) {
+        console.error("Giriş yapılırken hata oluştu:", e);
+        showLockError();
+      }
+    }
+
+    function showLockError() {
+      const errorMsg = document.getElementById('lockError');
+      errorMsg.style.display = 'block';
+      setTimeout(() => { errorMsg.style.display = 'none'; }, 2000);
+    }
+
+    // Şifre kutusundayken Enter'a basınca da çalışsın
+    document.getElementById('diaryPass').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') unlockDiary();
+    });
+
+    document.getElementById('diaryPass').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') unlockDiary();
+    });
+
+    // --- KARANLIK MOD SİSTEMİ ---
+    function toggleTheme() {
+      const body = document.body;
+      const themeBtn = document.getElementById('themeToggleBtn');
+      const icon = themeBtn.querySelector('i');
+      
+      // dark-mode class'ını aç/kapat
+      body.classList.toggle('dark-mode');
+      
+      if(body.classList.contains('dark-mode')) {
+        icon.className = 'fa-solid fa-sun'; // Güneş ikonu
+        localStorage.setItem('plannerTheme', 'dark'); // Seçimi kaydet
+      } else {
+        icon.className = 'fa-solid fa-moon'; // Ay ikonu
+        localStorage.setItem('plannerTheme', 'light'); // Seçimi kaydet
+      }
+    }
+
+    // Sayfa yüklendiğinde eski seçimi hatırla (Bunu en altta boş bir yere yapıştır)
+    window.addEventListener('load', () => {
+      const savedTheme = localStorage.getItem('plannerTheme');
+      if (savedTheme === 'dark') {
+        document.body.classList.add('dark-mode');
+        document.getElementById('themeToggleBtn').innerHTML = '<i class="fa-solid fa-sun"></i>';
+      }
+    });
+  </script>
+
+</body>
+</html>
